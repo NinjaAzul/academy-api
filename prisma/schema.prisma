@@ -1,0 +1,171 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id        String   @id @default(uuid())
+  user      String   @unique
+  password  String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relations
+  role   Role?   @relation(fields: [roleId], references: [id])
+  roleId String?
+
+  permissions Permission[]
+
+  person Person?
+
+  groups Group[]
+
+  @@map("users")
+}
+
+model Person {
+  id        String   @id @default(uuid())
+  name      String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relations
+  userId String? @unique
+  user   User?   @relation(fields: [userId], references: [id])
+
+  @@map("persons")
+}
+
+model Role {
+  id          String  @id @default(uuid())
+  name        String  @unique
+  description String?
+
+  // Relations
+  users User[]
+
+  permissions Permission[]
+
+  group   Group?  @relation(fields: [groupId], references: [id])
+  groupId String?
+
+  @@map("roles")
+}
+
+model Permission {
+  id          String  @id @default(uuid())
+  name        String  @unique
+  description String?
+
+  // Relations
+  roles  Role?   @relation(fields: [roleId], references: [id])
+  roleId String? @unique
+
+  users User[]
+
+  @@map("permissions")
+}
+
+model Group {
+  id        String   @id @default(uuid())
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relations
+
+  roles Role[]
+
+  User   User?   @relation(fields: [userId], references: [id])
+  userId String? @unique
+
+  @@map("groups")
+}
+
+model Professor {
+  id          String   @id @default(uuid())
+  professorId String   @unique @map("professor_id")
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  // Relations
+  studendts Student[]
+
+  @@map("professors")
+}
+
+model Student {
+  id String @id @default(uuid())
+
+  trainingQuantity         Int
+  trainingQuantityFinished Int
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relations
+  professor   Professor? @relation(fields: [professorId], references: [id])
+  professorId String?
+
+  studentId String @unique @map("student_id")
+
+  training Training[]
+
+  @@map("students")
+}
+
+model Training {
+  id        String   @id @default(uuid())
+  name      String
+  color     String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relations
+  student   Student? @relation(fields: [studentId], references: [id])
+  studentId String?
+
+  exercise Exercise[]
+
+  @@map("trainnings")
+}
+
+model Exercise {
+  id         String   @id @default(uuid())
+  name       String
+  velocity   Int?
+  image      String?
+  time       Int?
+  series     Int?
+  repetition Int?
+  weight     Int?
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  // Relations
+  training   Training? @relation(fields: [trainingId], references: [id])
+  trainingId String?
+
+  exerciseType   ExerciseType? @relation(fields: [exerciseTypeId], references: [id])
+  exerciseTypeId String?
+
+  @@map("exercises")
+}
+
+model ExerciseType {
+  id        String   @id @default(uuid())
+  name      String   @unique
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relations
+  exercises Exercise[]
+
+  @@map("exercise_types")
+}
